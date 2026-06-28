@@ -61,11 +61,11 @@ def clean_total_charges(df:pd.DataFrame) -> pd.DataFrame:
     # creating a copy of df
     df = df.copy()
     # identifying blank values in the total_charges column
-    blank_values = df["total_charges"].astype(str).str.strip().eq("")
+    blank_values = df["TotalCharges"].astype(str).str.strip().eq("")
     # converting invalid values to NaN
-    df['total_charges'] = pd.to_numeric(df['total_charges'], errors = "coerce")
+    df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors = "coerce")
     # replace missing values with 0 for customers whose tenure is zero
-    df.loc[(df['total_charges'].isna()) & (df['tenure']==0), 'total_charges'] = 0
+    df.loc[(df['TotalCharges'].isna()) & (df['tenure']==0), 'total_charges'] = 0
     
     return df
 
@@ -132,3 +132,4 @@ if __name__ == "__main__":
     data = encode_binary_columns(data)
     # Saving data to csv
     save_data(data, "../data/processed/Telco-Customer-Churn-Cleaned.csv")
+    
