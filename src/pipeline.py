@@ -11,12 +11,13 @@
 # SECTION 1: Importing the necessary libraries
 # =========================================================================================
 import os
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from .preprocessed import load_data
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
-    accuracy_score,
+    balanced_accuracy_score,
     classification_report,
     roc_auc_score
 )
@@ -91,11 +92,13 @@ def train_model(df: pd.DataFrame, target_col:str):
     )
     return X_train, X_test, y_train, y_test, xgb
 
-
-# ===========================================================
-# SECTION 7: complete preprocessing + model pipeline
-# ===========================================================
+# calling the train_model function to split the data and get the model
 X_train, X_test, y_train, y_test, xgb_model = train_model(data, target_col="churn")
+
+
+# =====================================================
+# SECTION 7: complete preprocessing + model pipeline
+# =====================================================
 pipeline =Pipeline(steps=(
     ("high_skewed", High_Skewed_Transformer),
     ("categorical", Categorical_encoding),
@@ -108,4 +111,18 @@ pipeline.fit(X_train, y_train)
 
 # making predictions
 proba = pipeline.predict_proba(X_test)[:, 1]
-print("Code worked!")
+
+# Setting the threshold to 0.3 to convert the probabilities to binary class predictions
+THRESHOLD = 0.3
+y_pred = (proba >= THRESHOLD).astype(int)
+
+if __name__ == "__main__":
+    # evaluating the model
+    print("Balanced Accuracy Score:", balanced_accuracy_score(y_test, y_pred))
+    print("Classification Report:\n", classification_report(y_test, y_pred))
+    print("ROC AUC Score:", roc_auc_score(y_test, proba))
+
+    # saving the trained pipeline to a file
+    model_path = Path("models/xgb_pipeline.pkl")
+    joblib.dump(pipeline, model_path)
+    print(f"Trained pipeline saved to {model_path}")
